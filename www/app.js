@@ -501,10 +501,19 @@ app.post('/set_portrait',portrait_upload.single('img'),(req,res)=>{
    const req_token = req.headers.authorization.split(' ').pop()
    //解密token
    const tokenData = jwt.verify(req_token,app.get('secret'))
-   const update_protrait = "UPDATE user SET portrait = ? WHERE id='" + tokenData.id + "'"
-   connection.query(update_protrait,[req.file.filename],(err,result)=>{
-        res.send({protrait_URL:req.file.filename})
-   })     
+   connection.query("SELECT portrait FROM user WHERE id='" + tokenData.id + "'",(err0,result0) => {
+    const update_protrait = "UPDATE user SET portrait = ? WHERE id='" + tokenData.id + "'"
+    connection.query(update_protrait,[req.file.filename],(err,result)=>{
+        //删除原头像
+        fs.unlink('./img/portrait/'+ result0[0].portrait, err2=>{
+            if(err2){
+                console.log(err2);
+            }
+            res.send({protrait_URL: req.file.filename})
+            })
+            
+    })    
+   })
 })
 
 //设置性别

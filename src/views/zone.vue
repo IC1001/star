@@ -32,13 +32,6 @@
         <div  v-if="user == zoneData.name"></div>
         <div class="follow_btn" v-else @click="setFollow">{{follow_status}}</div>          
       </div>
-      <!-- <div id="follow">+ 关注</div> -->
-      <!-- <div class="friends">
-        <div>关注：{{zoneData.follow}}</div>
-        <div>粉丝：{{zoneData.fans}}</div>
-      </div> -->
-
-         
     </div>
 
     <div class="zoneShow">
@@ -66,10 +59,7 @@
       <div slot="title"></div>
     </show-item>
     <friend :friendData="follow_fans_data" v-if="clickIndex == 3||4"></friend>
-    <!-- <friend :friendData="fans_data" v-show="clickIndex == 4"></friend> -->
-    <!-- <friend :friendData="fans_data" v-if="clickIndex== 4"></friend> -->
     <div @click="clickUpLoad" class="upload" v-if="zoneData.id == loginData.id"><i  class="el-icon-upload2"></i>上传图片</div>
-    <!-- <div @click="clickUpLoad" class="editAlbum"><i  class="el-icon-upload2"></i>编辑相册</div> -->
     <up-load v-if="isUpload" @closeBar="closeBar"></up-load>    
   </div>
 </template>
@@ -98,8 +88,7 @@ export default {
       query_nav:this.$route.query.nav,
       isUpload:false,
       isedit:false,
-      // follow_data:this.$store.state.friends.follow_users,
-      // fans_data:this.$store.state.friends.fans_users
+
     }
   },
   components:{
@@ -113,12 +102,7 @@ export default {
         return this.$store.state.like_collect_data.collect_album_data
       }
     },
-    // follow_data(){
-    //   return this.follow_data
-    // },
-    // fans_data(){
-    //   return this.fans_data
-    // },
+
     follow_fans_data(){
       if(this.clickIndex == 3){
         return this.$store.state.friends.follow_users
@@ -127,19 +111,6 @@ export default {
       }      
     },
 
-    // friend_data(){
-    //   if(this.clickIndex == 3){
-    //     return this.$store.state.friends.follow_data
-    //   }else if(this.clickIndex == 4){
-    //     return this.$store.state.friends.fans_data
-    //   }
-    // },
-    // follow_data(){
-    //   return this.$store.state.friends.follow_data
-    // },
-    // fans_data(){
-    //   return this.$store.state.friends.fans_data
-    // }
   },
   methods:{
     editAlbum(){
@@ -178,13 +149,20 @@ export default {
       this.avatar = !this.avatar
     },
 		cropSuccess(imgDataUrl, field){
-      this.imgDataUrl = imgDataUrl;
+      // this.imgDataUrl = imgDataUrl;
+      // console.log(imgDataUrl);
+      // console.log('))))');
+      
+      // console.log(field);
+      
     },
     toThis(item,index){
       this.clickIndex = index
     },
 		cropUploadSuccess(jsonData, field){
       this.avatar = false
+      this.zoneData.portrait = jsonData.protrait_URL
+      // window.location.href = this.$route.path + '?user=' +  this.$route.query.user
     },
     setFollow(){
       if(localStorage.token){
