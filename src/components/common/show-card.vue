@@ -19,7 +19,7 @@
       <div class="who" @click="toZone">
         <img src="@a/icon/user.png" v-if="!show.portrait" >
         <img v-lazy="avatarUrl+show.portrait" alt="" v-else>
-        {{show.user_name}}
+        {{show.name}}
       </div>
       <div>{{show.date}}</div>
     </div>

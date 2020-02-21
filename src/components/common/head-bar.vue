@@ -141,8 +141,8 @@ export default {
     },
     toLogin(){
       // this.$router.push('/login')
-      if(this.login.name!==undefined || localStorage.token !==undefined){
-        if(this.login.password==undefined && localStorage.token == undefined){
+      if(this.login.name !== undefined || localStorage.token !== undefined){
+        if(this.login.password == undefined && localStorage.token == undefined){
           this.$message({
             showClose: true,
             message: '请输入密码',
@@ -152,7 +152,16 @@ export default {
         }
         this.axios.post('login',this.login)
         .then((res)=>{
-          
+          if(res.data == 'err'){
+            this.$message({
+              showClose: true,
+              message: '用户名或密码错误',
+              type: 'warning'
+            })
+            this.login.name = ''
+            this.login.password = ''
+            return
+          }   
           if(res.data.token){
             this.$store.commit('setAlbumData',res.data.user_album)
             this.$store.commit('setZoneData',res.data.user_info)
@@ -165,13 +174,9 @@ export default {
               localStorage.token = res.data.token
               window.location.href = '/'
             }
-            }else{
-              this.$message({
-                showClose: true,
-                message: '用户名或密码错误',
-                type: 'warning'
-              })
-            }      
+            }
+            
+   
           })
       }else{
         this.$message({

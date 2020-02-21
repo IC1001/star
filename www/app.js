@@ -150,13 +150,14 @@ app.post('/detail',(req,res)=>{
 
 //获得首页展示数据
 app.get('/index_data',(req,res)=>{   
-    const get_index_data ="SELECT * FROM album INNER JOIN user ON album.user_id = user.id WHERE album.img != '' AND album.type != '私密'"
+    const get_index_data ="SELECT * FROM zone_view WHERE type != 'private' AND type != '私密' AND img != ''"
+    // const get_index_data ="SELECT * FROM album INNER JOIN user ON album.user_id = user.id WHERE album.img != '' AND album.type != '私密'"
     connection.query(get_index_data,(err,result)=>{
         if(result){
-            for(let i = 0; i<result.length;i++){
-                result[i].password = '***'
-            }           
-            const index_data = result
+            // for(let i = 0; i<result.length;i++){
+            //     result[i].password = '***'
+            // }           
+            const index_data = result           
             index_data.sort((x,y)=>{
                 return (y.views + y.likes * 2 + y.collect * 2) - (x.views + x.likes * 2 + x.collect * 2)
             })
@@ -179,17 +180,16 @@ app.get('/index_data',(req,res)=>{
 
 //进入分类页面
 app.post('/type:title',(req,res)=>{
-    const select_album_type = "SELECT * FROM album INNER JOIN user ON album.user_id = user.id  WHERE type='" + req.body.title + "' AND img != ''"
-    connection.query(select_album_type,(err,result)=>{
+    connection.query("SELECT * FROM zone_view WHERE type='" + req.body.title + "' AND img != ''",(err,result)=>{
         if(err){ 
             console.log(err);
             return 
         }  
-        for(let i = 0; i<result.length;i++){
-            result[i].password = '***'
-        }
         res.send(result)
     })       
+})
+app.get('/type:title',(req,res)=>{
+    res.sendFile(path.join(__dirname, '../dist', 'index.html'))
 })
 
 //进入空间并传入数据
@@ -279,6 +279,10 @@ app.post('/login',(req,res)=>{
         const login_sql = "SELECT * FROM user WHERE name='" + req.body.name + "'";
         connection.query(login_sql,function (err, result) {
             if(err){return}
+            if(result[0] == undefined) {
+                res.send('err')
+                return
+            }
             if(result[0].password == req.body.password){
                 const token = jwt.sign({id:result[0].id},app.get('secret'))
                 connection.query(select_user_album + result[0].id + "'" ,(err2,result2)=>{
@@ -316,7 +320,7 @@ app.post('/register',(req,res)=>{
                     const create_date = curDate.getFullYear() + '-' +(curDate.getMonth()+1) + '-'  + curDate.getDate()
                     //创建默认相册
                     connection.query('INSERT INTO album(user_id,album_name,type,date,user_name) VALUES(?,?,?,?,?)',
-                        [result[0].id,'默认相册','private',create_date,result[0].name],(err,result)=>{
+                        [result[0].id,'默认相册','私密',create_date,result[0].name],(err,result)=>{
                             if(err){
                                 console.log('[INSERT ERROR] - ',err.message)
                                 return

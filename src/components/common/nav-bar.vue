@@ -33,11 +33,19 @@ export default {
           this.$router.push('/')  
         }else {
           this.$router.push('/type' + title) 
-          this.axios.post('/type'+title,{title:title})
-          .then(res=>{          
-            this.$store.commit('setTypeData',res.data)
-            this.mark = index
+          this.axios.get('/type'+title)
+          .then(()=>{
+            this.axios.post('/type'+title,{title:title})
+            .then(res=>{          
+              this.$store.commit('setTypeData',res.data)
+              this.mark = index
+            })
           })
+          // this.axios.post('/type'+title,{title:title})
+          // .then(res=>{          
+          //   this.$store.commit('setTypeData',res.data)
+          //   this.mark = index
+          // })
         }
       }else if(this.$route.path.indexOf('admin')!==-1){
         this.$router.push('/admin'+title) 
@@ -77,7 +85,6 @@ export default {
     cursor: pointer;
     color: #2F4F4F;
     font-weight: 600;
-    border-radius: 10px;
   }
   .isActive{
     color: #2F4F4F;

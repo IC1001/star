@@ -54,7 +54,7 @@
         <span @click="editAlbum" v-if="zoneData.id == loginData.id && !isedit" class="setting">
           <i  class="el-icon-setting"></i>编辑
         </span>
-        <span @click="isedit=false" v-if="isedit" class="setting">
+        <span @click="editAlbum" v-if="isedit" class="setting">
           <i class="el-icon-check"></i>完成
         </span>
       </div>
@@ -143,7 +143,14 @@ export default {
   },
   methods:{
     editAlbum(){
-      this.isedit = true
+      if(this.isedit == true) {
+        this.isedit=false
+        window.location.href = this.$route.path+'?user='+this.$route.query.user
+      }else{
+        this.isedit = true
+      }
+      
+      
     },
     clickUpLoad(){
       this.isUpload = true
@@ -229,13 +236,7 @@ export default {
         this.zoneData = this.$store.state.zoneData
         //相册
         this.$store.commit('setAlbumData',res.data.user_album)
-        console.log(res.data.user_album);
- 
-        console.log(this.$store.state.user_album);
-
-        
         this.zone_album =  this.$store.state.user_album
-               console.log(this.zone_album);
         //like_collet
         this.$store.commit('setLCdata',res.data.like_collect)
         // this.like_collect_data =  this.$store.state.like_collect_data

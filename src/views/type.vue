@@ -52,6 +52,14 @@ export default {
       this.isUpload = false
     },
   },
+  created() {
+    let title = this.$route.params.title
+    this.axios.post('/type'+title,{title:title})
+    .then(res=>{          
+      this.$store.commit('setTypeData',res.data)
+      this.mark = index
+    })
+  }
 
 }
 </script>
