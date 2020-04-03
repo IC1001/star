@@ -11,7 +11,7 @@ const jwt = require('jsonwebtoken')
 //处理上传文件的中间件
 const multer = require('multer')
 //设置密钥
-app.set('secret','xjf2n3n212n4')
+app.set('secret','111111111')
 //assert判断抛出异常
 const assert = require('http-assert')
 // 引入mysql驱动
