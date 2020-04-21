@@ -11,21 +11,6 @@ const routes = [
     component: Home
   },
   {
-    path: '/admin:title',
-    name: 'admin',
-    component: () => import('@v/admin/admin.vue'),
-    // children:[
-    //   {name: 'album',path:'/album',component: () => import('@v/admin/a_album.vue')},
-    //   {name: 'user',path:'/user',component: () => import('@v/admin/a_user.vue')},
-    //   {name: 'banner',path:'/banner',component: () => import('@v/admin/a_banner.vue')},
-    // ]
-  },
-  {
-    path: '/type:title',
-    name: 'type',
-    component: () => import('@v/type.vue')
-  },
-  {
     path: '/detail',
     name: 'detail',
     component: () => import('@v/detail.vue')
@@ -34,11 +19,6 @@ const routes = [
     path: '/zone',
     name: 'zone',
     component: () => import('@v/zone.vue')
-  },
-  {
-    path: '/register',
-    name: 'register',
-    component: () => import('@v/register.vue')
   }
 ]
 

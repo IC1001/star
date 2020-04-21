@@ -2,14 +2,14 @@
 	<div>
 		<div class="head">
 			<div class="logo" @click="toHome">
-      	<img src="@a/icon.png" alt="网站logo">
-				<div class="color">星相册</div>
+				<div>Blog</div>
 			</div>
-			<div class="login" v-show="test">
+			<div class="login" >
         <img :src="avatarUrl+user.portrait"  class="avatar" @click="toOwnZone" v-if="user.portrait" >
-        <!-- <img src="@a/icon/user.png" v-else class="avatar"> -->
         <div v-show="user" @click="toOwnZone">{{user.name}}</div>
         <div v-show="user" @click="exit">退出<i class="el-icon-caret-right"></i></div>
+
+        <el-button v-show="user" @click.native="writeBlog" icon="el-icon-edit" size="mini" round>写文章</el-button>
 				<div @click="isLogin" v-show="!user"><i class="el-icon-user"></i>登录</div>
 				<div @click="isRegister" v-show="!user"><i class="el-icon-circle-plus-outline"></i>注册</div>
 			</div>
@@ -17,8 +17,7 @@
     <!-- 登录框 -->
     <div id="login" v-if="clickLogin">
       <div class="lhead">
-        <div id="star_img" ><img src="@a/icon/s5.png" alt=""></div>
-				<div class="color">登录</div>
+				<div class="rtitle">登录</div>
         <i class="el-icon-close rt" @click="closeLogin"></i>
       </div>
       <form @submit.prevent="toLogin">
@@ -41,8 +40,6 @@
     <!-- 注册框 -->
     <div id="register" v-if="clickRegister">
       <div class="rhead">
-        <!-- <img src="@a/icon.png" alt="网站logo"> -->
-        <div id="star_img" ><img src="@a/icon/s4.png" alt=""></div>
 				<div class="rtitle">注册</div>
         <i class="el-icon-close rt" @click="closeLogin"></i>
       </div>
@@ -74,22 +71,37 @@
           
         </div>
       </form>
-      <!-- <div class="rbtn2">or</div> -->
       
     </div>
-    <div id="model" v-if="clickLogin || clickRegister">
+    <div id="model" v-if="clickLogin || clickRegister || creating">
       <div class="star"></div>
       <div class="star"></div>
       <div class="star"></div>
       <div class="star"></div>
       <div class="star"></div>
     </div>
-    
+    <div v-if="creating" class="h_editor">
+      <el-input v-model="title" placeholder="标题："></el-input>
+      <vue-editor id="editor"
+        useCustomImageHandler
+        @image-added="handleImageAdded"
+        @image-removed="handleImageDeleted"
+        v-model="content"
+        />
+      <div class="editor_footer">
+        <el-button type="primary" @click.native="submitBlog">发布</el-button>
+        <el-button type="danger" @click.native="creating = false">取消</el-button>
+      </div>
+    </div>
 	</div>
 </template>
   
 <script>
+import { VueEditor } from "vue2-editor";
 export default {
+  components:{
+    VueEditor 
+  },
   data(){
     return{
       clickLogin:false,
@@ -103,7 +115,11 @@ export default {
       verify:'',
       tips:'',
       sex:1,
-      test:false
+      test:false,
+      creating:false,
+      title:'',
+      content:'',
+      imgList:[]
       
     }
   },
@@ -113,6 +129,74 @@ export default {
     }
   },
   methods:{
+    handleImageAdded(file, Editor, cursorLocation, resetUploader) {
+      var formData = new FormData()
+      formData.append('img', file)
+      this.axios.post('/saveImg',formData)
+        .then(res => {
+          let url = res.data.url
+          Editor.insertEmbed(cursorLocation, "image", url)
+          this.imgList.push(url)
+          resetUploader()
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
+    handleImageDeleted(image){
+      console.log(image);
+      
+      this.axios.post('/deleteImg',{filename:image})
+      .then(res=>{
+        
+        this.imgList.forEach((item,i)=>{
+          if(image == item){
+            this.imgList.splice(i,1)
+            return
+          }
+        })
+        console.log('this.imgList:'+this.imgList);
+        
+      })
+      
+    },
+    submitBlog(){
+      if(this.title.length < 4){
+        this.$message({
+          message: '标题字数大于4',
+          type: 'warning'
+        })   
+        return
+      }
+      if(this.content.length < 20){
+        this.$message({
+          message: '文章内容字数需大于20',
+          type: 'warning'
+        })   
+        return        
+      }
+      let front_content = document.getElementById('editor').innerText
+      
+      let Data = {
+        title: this.title,
+        content: this.content,
+        front_content,
+        cover:this.imgList.length === 0 ? 'noimg' : this.imgList[0]
+      }
+      this.axios.post('/submitBlog',Data)
+      .then(res=>{
+        this.creating = false
+        this.$message({
+          message: '发布成功',
+          type: 'success'
+        })
+        let ownzone = this.$router.resolve({path:'/detail' , query:{id: res.data.id}})
+        window.open(ownzone.href,'_blank')          
+      })
+    },
+    writeBlog(){
+      this.creating = true
+    },
     isLogin(){
       this.clickLogin = true
       this.clickRegister = false
@@ -130,7 +214,7 @@ export default {
       if(this.$route.path=='/'){
         this.adminPage++
         if(this.adminPage == 3 && this.$store.state.loginData.name == 'admin'){
-          this.$router.push('/adminxx')
+          this.$router.push('/admin')
           this.axios.get('/admin')
         }else if(this.adminPage == 3 && this.$store.state.loginData.name == undefined){
           this.test = true
@@ -163,10 +247,10 @@ export default {
             return
           }   
           if(res.data.token){
-            this.$store.commit('setAlbumData',res.data.user_album)
-            this.$store.commit('setZoneData',res.data.user_info)
+            // this.$store.commit('setBolgData',res.data.myBlogData)
+            // this.$store.commit('setZoneData',res.data.user_info)
             this.$store.commit('setLoginData',res.data.user_info)
-            this.$store.commit('setLoginAlbum',res.data.user_album)
+            // this.$store.commit('setLoginAlbum',res.data.user_album)
             this.clickLogin = false          
             this.user = res.data.user_info
             localStorage.user = res.data.user_info.name
@@ -174,7 +258,7 @@ export default {
               localStorage.token = res.data.token
               window.location.href = '/'
             }
-            }
+          }
             
    
           })
@@ -239,7 +323,7 @@ export default {
     },
     //个人空间
     toOwnZone(){
-      let ownzone = this.$router.resolve({path:'/zone' , query:{user:this.user.name}})
+      let ownzone = this.$router.resolve({path:'/zone' , query:{user: this.user.name}})
       window.open(ownzone.href,'_blank')    
     },
     exit(){
@@ -372,6 +456,42 @@ export default {
   // }
 }
 
+
+.h_editor{
+  position: fixed;
+  top: calc(50% - 300px);
+  left: 20%;
+  width: 60%;
+  // margin-top: 50px;
+  z-index: 100000;
+  // height: 100%;
+  background-color: #fff;
+  border-radius: 4px;
+  input{
+    border-radius: 0px;
+  }
+  .ql-editor{
+    height: 450px;
+    overflow-y: scroll;
+    img{
+      width: 50%;
+      margin-left: 25%;
+      
+    }
+  }
+  .editor_footer{
+    width: 100%;
+    height: 60px;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    button{
+      margin-right: 10px;
+    }
+    
+  }
+}
 .avatar{
   width: 30px;
   height: 30px;
@@ -410,11 +530,8 @@ export default {
 		align-items: center;
 		font-size: 1.5rem;
     color: rgb(245, 245, 245);
-    // font-weight: 600;
     letter-spacing: 2px;
     margin-bottom: 20px;
-   // padding: 10px;
-    // line-height: 70px;
     .rtitle{
       border-bottom: #00CED1 solid 4px;
       padding-bottom: 10px;
@@ -552,6 +669,10 @@ export default {
     // font-weight: 600;
     letter-spacing: 2px;
     margin-bottom: 20px;
+    .rtitle{
+      border-bottom: #00CED1 solid 4px;
+      padding-bottom: 10px;
+    }
   }
   .inputBar{
     margin:60px 0 20px 0px;
@@ -633,13 +754,13 @@ export default {
 	// min-width: 990px;
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	z-index: 100;
+	justify-content: space-around;
+  z-index: 100;
 	.logo{
 		display: flex;
 		align-items: center;
 		font-size: 1.4rem;
-		color: #fdd000;
+		color: white;
 		line-height: 70px;
     margin-left: 1%;
     cursor: pointer;

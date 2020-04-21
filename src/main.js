@@ -13,11 +13,14 @@ axios.interceptors.request.use(function(config){
   config.headers.Authorization = 'Bearer ' + localStorage.token
   return config
 })
+// axios.defaults.baseURL = ' http://localhost:3000/';
 Vue.use(VueAxios, axios)
 Vue.config.productionTip = false
 
 Vue.use(ElementUI)
 Vue.use(VueLazyload)
+
+
 
 new Vue({
   router,
