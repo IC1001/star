@@ -1,5 +1,5 @@
 # 相册展示系统
-前言：个人毕业设计项目，可通过访问：www.xingalbum.cn 直接访问
+前言：个人毕业设计项目
 ## 技术栈
 前端：（vue + vue-router + vuex + elementUi） 服务端：（node.js + express） + Mysql数据库
 
